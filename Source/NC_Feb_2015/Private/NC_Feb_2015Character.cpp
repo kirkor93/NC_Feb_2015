@@ -28,14 +28,6 @@ ANC_Feb_2015Character::ANC_Feb_2015Character(const FObjectInitializer& ObjectIni
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 30.0f, 10.0f);
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	Mesh1P = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	Mesh1P->AttachParent = FirstPersonCameraComponent;
-	Mesh1P->RelativeLocation = FVector(0.f, 0.f, -150.f);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
-
 	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P are set in the
 	// derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -51,7 +43,6 @@ void ANC_Feb_2015Character::SetupPlayerInputComponent(class UInputComponent* Inp
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	
-	InputComponent->BindAction("Fire", IE_Pressed, this, &ANC_Feb_2015Character::OnFire);
 	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ANC_Feb_2015Character::TouchStarted);
 
 	InputComponent->BindAxis("MoveForward", this, &ANC_Feb_2015Character::MoveForward);
@@ -82,24 +73,6 @@ void ANC_Feb_2015Character::OnFire()
 			World->SpawnActor<ANC_Feb_2015Projectile>(ProjectileClass, SpawnLocation, SpawnRotation);
 		}
 	}
-
-	// try and play the sound if specified
-	if (FireSound != NULL)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
-	// try and play a firing animation if specified
-	if(FireAnimation != NULL)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if(AnimInstance != NULL)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
-
 }
 
 void ANC_Feb_2015Character::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
